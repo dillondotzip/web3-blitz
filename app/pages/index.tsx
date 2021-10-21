@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import {
   useMutation,
   invokeWithMiddleware,
@@ -9,6 +9,7 @@ import {
 } from "blitz"
 import { useWeb3React, Web3ReactProvider } from "@web3-react/core"
 import { InjectedConnector } from "@web3-react/injected-connector"
+import { WalletConnectConnector } from "@web3-react/walletconnect-connector"
 import { Web3Provider } from "@ethersproject/providers"
 import createSession from "app/users/mutations/createSession"
 import getSession from "app/users/queries/getSession"
@@ -29,6 +30,14 @@ export const getServerSideProps = async ({ req, res }) => {
 }
 
 const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] })
+const wcConnector = new WalletConnectConnector({
+  rpc: {
+    1: process.env.NEXT_PUBLIC_RPC_URL_MAINNET as string,
+  },
+  bridge: "https://bridge.walletconnect.org",
+  qrcode: true,
+  pollingInterval: 12000,
+})
 
 const getLibrary = (provider) => {
   const library = new Web3Provider(provider)
@@ -67,6 +76,7 @@ const Web3 = () => {
   }
 
   useEffect(() => {
+    console.log(web3React.connector === wcConnector)
     if (web3React.active) {
       createSessionMutation({ address: web3React.account, connector: connector })
     }
@@ -84,6 +94,18 @@ const Web3 = () => {
         if (authorized) {
           web3React.activate(injected)
           setConnector("injected")
+        }
+      })
+    } else if (
+      !web3React.active &&
+      session &&
+      session.walletAddress !== "" &&
+      session.connector === "walletconnect"
+    ) {
+      injected.isAuthorized().then((authorized) => {
+        if (authorized) {
+          web3React.activate(wcConnector)
+          setConnector("walletconnect")
         }
       })
     }
@@ -104,6 +126,14 @@ const Web3 = () => {
               }}
             >
               Metamask
+            </button>
+            <button
+              onClick={async () => {
+                await web3React.activate(wcConnector)
+                setConnector("walletconnect")
+              }}
+            >
+              WalletConnect
             </button>
           </div>
         </div>
@@ -127,6 +157,7 @@ const Web3 = () => {
                 className="row disconnect-button"
                 onClick={async () => {
                   web3React.deactivate()
+                  web3React.connector === wcConnector && wcConnector.close()
                   await destroySessionMutation()
                 }}
               >
