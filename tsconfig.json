@@ -11,7 +11,7 @@
     "noEmit": true,
     "noUncheckedIndexedAccess": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -20,5 +20,6 @@
     "tsBuildInfoFile": ".tsbuildinfo"
   },
   "exclude": ["node_modules", "**/*.e2e.ts", "cypress"],
-  "include": ["blitz-env.d.ts", "**/*.ts", "**/*.tsx"]
+  "include": ["blitz-env.d.ts", "**/*.ts", "**/*.tsx", "./scripts", "./test"],
+  "files": ["./hardhat.config.ts"]
 }
