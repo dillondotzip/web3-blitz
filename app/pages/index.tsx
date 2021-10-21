@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react"
 import {
   useMutation,
-  InferGetServerSidePropsType,
   invokeWithMiddleware,
   useQuery,
   QueryClient,
@@ -13,6 +12,7 @@ import { InjectedConnector } from "@web3-react/injected-connector"
 import { Web3Provider } from "@ethersproject/providers"
 import createSession from "app/users/mutations/createSession"
 import getSession from "app/users/queries/getSession"
+import destroySession from "app/users/mutations/destroySession"
 
 export const getServerSideProps = async ({ req, res }) => {
   const queryClient = new QueryClient()
@@ -40,6 +40,7 @@ const Web3 = () => {
   const [session] = useQuery(getSession, null)
   const [connector, setConnector] = useState("")
   const [createSessionMutation] = useMutation(createSession)
+  const [destroySessionMutation] = useMutation(destroySession)
 
   const getTruncatedAddress = (address) => {
     if (address && address.startsWith("0x")) {
@@ -126,7 +127,7 @@ const Web3 = () => {
                 className="row disconnect-button"
                 onClick={async () => {
                   web3React.deactivate()
-                  await createSessionMutation({ address: "", connector: "" })
+                  await destroySessionMutation()
                 }}
               >
                 Disconnect
