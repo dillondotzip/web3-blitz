@@ -15,6 +15,9 @@ import createSession from "app/users/mutations/createSession"
 import getSession from "app/users/queries/getSession"
 import destroySession from "app/users/mutations/destroySession"
 
+import MakeNFT from "app/artifacts/contracts/MakeNFT.sol/MakeNFT.json"
+import { Contract } from "ethers"
+
 export const getServerSideProps = async ({ req, res }) => {
   const queryClient = new QueryClient()
   const queryKey = getQueryKey(getSession, null)
@@ -29,7 +32,7 @@ export const getServerSideProps = async ({ req, res }) => {
   }
 }
 
-const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42] })
+const injected = new InjectedConnector({ supportedChainIds: [1, 3, 4, 5, 42, 1337] })
 const wcConnector = new WalletConnectConnector({
   rpc: {
     1: process.env.NEXT_PUBLIC_RPC_URL_MAINNET as string,
@@ -50,6 +53,9 @@ const Web3 = () => {
   const [connector, setConnector] = useState("")
   const [createSessionMutation] = useMutation(createSession)
   const [destroySessionMutation] = useMutation(destroySession)
+
+  const [minted, setMinted] = useState("")
+  const [minting, setMinting] = useState(false)
 
   const getTruncatedAddress = (address) => {
     if (address && address.startsWith("0x")) {
@@ -75,8 +81,24 @@ const Web3 = () => {
     }
   }
 
+  const mint = async () => {
+    const provider = web3React.library
+    const signer = provider.getSigner()
+    const connectedContract = new Contract(
+      "0x2f8742b0f98399A61E2e8aC8E61292d228DE8CCF",
+      MakeNFT.abi,
+      signer
+    )
+
+    let nftTxn = await connectedContract.generateNFT()
+    setMinting(true)
+    await nftTxn.wait()
+
+    setMinted(nftTxn.hash)
+    setMinting(false)
+  }
+
   useEffect(() => {
-    console.log(web3React.connector === wcConnector)
     if (web3React.active) {
       createSessionMutation({ address: web3React.account, connector: connector })
     }
@@ -151,6 +173,27 @@ const Web3 = () => {
               <div className="row network-section">
                 <div className="row-title">Address</div>
                 <div className="row-subtitle">{getTruncatedAddress(web3React.account)}</div>
+              </div>
+              <div>
+                {!minting && (
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault()
+                      mint()
+                    }}
+                  >
+                    Mint
+                  </button>
+                )}
+                {minting ? <p>Minting</p> : null}
+                {!minting && minted.length ? (
+                  <div>
+                    <p>
+                      <span>Transaction: </span>
+                      {minted}
+                    </p>
+                  </div>
+                ) : null}
               </div>
               <hr />
               <button

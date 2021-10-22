@@ -1,4 +1,8 @@
 import { task } from "hardhat/config"
+import { config as dotenvConfig } from "dotenv"
+import { resolve } from "path"
+dotenvConfig({ path: resolve(__dirname, "./.env.local") })
+
 import "@nomiclabs/hardhat-waffle"
 import { HardhatUserConfig } from "hardhat/config"
 
@@ -26,6 +30,14 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 1337,
+    },
+    goerli: {
+      url: `${process.env.NEXT_PUBLIC_RPC_URL_GOERLI}`,
+      accounts: [`${process.env.WALLET_PRIVATE_KEY}`],
+    },
+    rinkeby: {
+      url: `${process.env.NEXT_PUBLIC_RPC_URL_RINKEBY}`,
+      accounts: [`${process.env.WALLET_PRIVATE_KEY}`],
     },
   },
 }
