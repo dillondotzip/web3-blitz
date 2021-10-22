@@ -57,6 +57,8 @@ const Web3 = () => {
   const [minted, setMinted] = useState("")
   const [minting, setMinting] = useState(false)
 
+  const CONTRACT_ADDRESS = "0xCdA1881Cefa19392805ABd765025CF6f75DB59Bb"
+
   const getTruncatedAddress = (address) => {
     if (address && address.startsWith("0x")) {
       return address.substr(0, 4) + "..." + address.substr(address.length - 4)
@@ -84,18 +86,15 @@ const Web3 = () => {
   const mint = async () => {
     const provider = web3React.library
     const signer = provider.getSigner()
-    const connectedContract = new Contract(
-      "0x2f8742b0f98399A61E2e8aC8E61292d228DE8CCF",
-      MakeNFT.abi,
-      signer
-    )
+    const connectedContract = new Contract(CONTRACT_ADDRESS, MakeNFT.abi, signer)
 
     let nftTxn = await connectedContract.generateNFT()
     setMinting(true)
+    connectedContract.on("NewNFTMinted", (_, tokenId) => {
+      setMinted(`https://testnets.opensea.io/assets/goerli/${CONTRACT_ADDRESS}/${tokenId}`)
+      setMinting(false)
+    })
     await nftTxn.wait()
-
-    setMinted(nftTxn.hash)
-    setMinting(false)
   }
 
   useEffect(() => {

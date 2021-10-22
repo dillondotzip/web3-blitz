@@ -18,6 +18,7 @@ contract MakeNFT is ERC721URIStorage {
 
   string[] firstWords = ["Dark", "Light", "Platninum", "Stone", "Wood", "Mirrored", "Water", "Thunder", "Giant", "Glitched"];
   string[] secondWords = ["Elf", "Cyborg", "Orc", "Human", "AI", "Dwarf", "Human", "Shapeshifter", "Gargoyle", "Wolf", "Hybrid Human"];
+  event NewNFTMinted(address sender, uint256 tokenId);
 
   constructor() ERC721 ("web3-blitz", "BLITZ") {
     console.log("Generated NFT.");
@@ -78,5 +79,8 @@ contract MakeNFT is ERC721URIStorage {
     _setTokenURI(newItemId, finalTokenUri);
     _tokenIds.increment();
     console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
+    emit NewNFTMinted(msg.sender, newItemId);
+
+
   }
 }
