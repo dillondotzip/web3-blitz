@@ -90,7 +90,8 @@ const Web3 = () => {
 
     let nftTxn = await connectedContract.generateNFT()
     setMinting(true)
-    connectedContract.on("NewNFTMinted", (_, tokenId) => {
+    connectedContract.on("NewNFTMinted", (from, tokenId) => {
+      console.log("from", from)
       setMinted(`https://testnets.opensea.io/assets/goerli/${CONTRACT_ADDRESS}/${tokenId}`)
       setMinting(false)
     })
@@ -99,7 +100,18 @@ const Web3 = () => {
 
   useEffect(() => {
     if (web3React.active) {
-      createSessionMutation({ address: web3React.account, connector: connector })
+      const provider = web3React.library
+      const signer = provider.getSigner()
+      const connectedContract = new Contract(CONTRACT_ADDRESS, MakeNFT.abi, signer)
+
+      connectedContract.balanceOf(web3React.account).then((d) => {
+        console.log(parseInt(d))
+        createSessionMutation({
+          address: web3React.account,
+          connector: connector,
+          nftsOwned: parseInt(d),
+        })
+      })
     }
   }, [web3React, createSessionMutation, connector, session])
 
