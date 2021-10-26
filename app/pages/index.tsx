@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import {
   useMutation,
   invokeWithMiddleware,
@@ -57,8 +57,8 @@ const Web3 = () => {
   const [minted, setMinted] = useState("")
   const [minting, setMinting] = useState(false)
 
-  const CONTRACT_ADDRESS = "0xCdA1881Cefa19392805ABd765025CF6f75DB59Bb"
-
+  // const CONTRACT_ADDRESS = "0xCdA1881Cefa19392805ABd765025CF6f75DB59Bb"
+  const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
   const getTruncatedAddress = (address) => {
     if (address && address.startsWith("0x")) {
       return address.substr(0, 4) + "..." + address.substr(address.length - 4)
@@ -98,22 +98,51 @@ const Web3 = () => {
     await nftTxn.wait()
   }
 
+  const showNFTS = useCallback(
+    async (contract) => {
+      let balance = await contract.balanceOf(web3React.account)
+      let i = 0
+      let supply = await contract.totalSupply()
+      let ownedNFTs: number[] = []
+
+      for (i = 0; i < parseInt(supply); i++) {
+        let owner = await contract.tokenOfOwnerByIndex(web3React.account, i)
+        ownedNFTs.push(parseInt(owner))
+      }
+
+      return createSessionMutation({
+        address: web3React.account,
+        connector: connector,
+        balance: parseInt(balance),
+        nftsOwned: ownedNFTs,
+      })
+    },
+    [web3React.account, createSessionMutation, connector]
+  )
+
   useEffect(() => {
     if (web3React.active) {
       const provider = web3React.library
       const signer = provider.getSigner()
       const connectedContract = new Contract(CONTRACT_ADDRESS, MakeNFT.abi, signer)
 
-      connectedContract.balanceOf(web3React.account).then((d) => {
-        console.log(parseInt(d))
-        createSessionMutation({
-          address: web3React.account,
-          connector: connector,
-          nftsOwned: parseInt(d),
-        })
+      createSessionMutation({
+        address: web3React.account,
+        connector: connector,
       })
+
+      showNFTS(connectedContract)
+
+      // View contract metadata
+      // connectedContract.tokenURI(0).then((u) => {
+      //   const requestBodyObject = decodeURIComponent(u).split(',')[1]
+      //   const json = JSON.parse(window.atob(requestBodyObject as string))
+      //   console.log(json.name)
+      //   console.log(json.description)
+      //   console.log(json.image)
+      // })
     }
-  }, [web3React, createSessionMutation, connector, session])
+  }, [web3React, createSessionMutation, connector, session, showNFTS])
 
   // Activate metamask wallet if found in user's persisted private session
   useEffect(() => {

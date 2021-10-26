@@ -11,7 +11,7 @@ export const getServerSideProps = async ({ req, res }) => {
   const session = await getSession(req, res)
   const privateData = await session.$getPrivateData()
 
-  if (privateData.nftsOwned >= 1) {
+  if (privateData.nftsOwned.length >= 1) {
     return { props: { session: privateData } }
   } else {
     return {

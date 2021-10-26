@@ -3,14 +3,27 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "hardhat/console.sol";
 
 import {Base64} from "./libraries/Base64.sol";
 
-contract MakeNFT is ERC721URIStorage {
+contract MakeNFT is ERC721URIStorage, IERC721Enumerable {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
+
+  // Mapping from owner to list of owned token IDs
+  mapping(address => mapping(uint256 => uint256)) private _ownedTokens;
+  // Mapping from token ID to index of the owner tokens list
+  mapping(uint256 => uint256) private _ownedTokensIndex;
+
+  // Array with all token ids, used for enumeration
+  uint256[] private _allTokens;
+
+  // Mapping from token id to position in the allTokens array
+  mapping(uint256 => uint256) private _allTokensIndex;
+
 
    // This is our SVG code. All we need to change is the word that's displayed. Everything else stays the same.
   // So, we make a baseSvg variable here that all our NFTs can use.
@@ -23,6 +36,20 @@ contract MakeNFT is ERC721URIStorage {
   constructor() ERC721 ("web3-blitz", "BLITZ") {
     console.log("Generated NFT.");
   }
+
+  function totalSupply() override public view returns (uint256) {
+    return _allTokens.length;
+  }
+
+  function tokenOfOwnerByIndex(address owner, uint256 index) override public view returns (uint256) {
+      return _ownedTokens[owner][index];
+  }
+
+  function tokenByIndex(uint256 index) override public view returns (uint256) {
+    return _allTokens[index];
+  }
+
+  
 
   function pickRandomFirstWord(uint256 tokenId) public view returns (string memory) {
     // I seed the random generator. More on this in the lesson. 
@@ -77,6 +104,10 @@ contract MakeNFT is ERC721URIStorage {
 
     _safeMint(msg.sender, newItemId);
     _setTokenURI(newItemId, finalTokenUri);
+    
+    _allTokens.push(newItemId);
+    _ownedTokens[msg.sender][_tokenIds.current()] = newItemId;
+
     _tokenIds.increment();
     console.log("An NFT w/ ID %s has been minted to %s", newItemId, msg.sender);
     emit NewNFTMinted(msg.sender, newItemId);
