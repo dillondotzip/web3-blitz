@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast"
 import {
   AppProps,
   ErrorBoundary,
@@ -17,7 +18,17 @@ export default function App({ Component, pageProps }: AppProps) {
       FallbackComponent={RootErrorFallback}
       onReset={useQueryErrorResetBoundary().reset}
     >
-      {getLayout(<Component {...pageProps} />)}
+      {getLayout(
+        <>
+          <Component {...pageProps} />
+          <Toaster
+            position="bottom-right"
+            toastOptions={{
+              duration: 5000,
+            }}
+          />
+        </>
+      )}
     </ErrorBoundary>
   )
 }

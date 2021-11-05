@@ -37,6 +37,7 @@
     "react": "alpha",
     "react-dom": "alpha",
     "react-hook-form": "7.17.4",
+    "react-hot-toast": "2.1.1",
     "web3": "1.6.0",
     "zod": "3.10.2"
   },
