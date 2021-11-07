@@ -21,17 +21,15 @@ const Private = ({ session }) => {
   return (
     <Layout session={session}>
       <h1>Owned Nfts</h1>
-      {session
-        ? session.nftsOwned.map((nft, i) => {
-            return (
-              <div key={i}>
-                <h3>{nft.name}</h3>
-                <p>{nft.description}</p>
-                <img src={nft.image} alt={nft.description} />
-              </div>
-            )
-          })
-        : null}
+      {session.nftsOwned.map((nft, i) => {
+        return (
+          <div key={i}>
+            <h3>{nft.name}</h3>
+            <p>{nft.description}</p>
+            <img src={nft.image} alt={nft.description} />
+          </div>
+        )
+      })}
     </Layout>
   )
 }
