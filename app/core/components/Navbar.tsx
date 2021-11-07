@@ -1,4 +1,4 @@
-import { useMutation } from "blitz"
+import { useMutation, Routes, useRouter, Link } from "blitz"
 
 import { useWeb3React } from "@web3-react/core"
 import { injected, wcConnector } from "integrations/connectors"
@@ -7,6 +7,7 @@ import destroySession from "app/users/mutations/destroySession"
 const Navbar = () => {
   const web3React = useWeb3React()
   const [destroySessionMutation] = useMutation(destroySession)
+  const router = useRouter()
 
   return (
     <div>
@@ -41,17 +42,22 @@ const Navbar = () => {
             <div>Network</div>
             <div>{web3React.chainId}</div>
           </div>
-          <hr className="divider" />
+          <hr />
           <div>
             <div>Address</div>
             <div>{web3React.account}</div>
           </div>
+          <hr />
+          <Link href={Routes.Private()} passHref>
+            <a>Owned NFTs</a>
+          </Link>
 
           <button
             onClick={async () => {
               web3React.deactivate()
               web3React.connector === wcConnector && wcConnector.close()
               await destroySessionMutation()
+              await router.push(Routes.Home())
             }}
           >
             Disconnect

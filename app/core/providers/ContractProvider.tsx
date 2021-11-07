@@ -17,10 +17,10 @@ const defaultContext: {
 const ContractContext = createContext(defaultContext)
 const useContract = () => useContext(ContractContext)
 
-const ContractProvider = ({ children }) => {
+const ContractProvider = ({ children, session }) => {
   const [connectedContract, setContract] = useState(defaultContext.connectedContract)
   const web3React = useWeb3React()
-  const [session] = useQuery(getSession, null)
+  // const [session] = useQuery(getSession, null)
   const [createSessionMutation] = useMutation(createSession)
 
   // Watch for when wallet is connected and create private session in database
