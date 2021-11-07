@@ -19,11 +19,26 @@ export const getServerSideProps = async ({ req, res }) => {
   }
 }
 
-const Home = () => {
+const Nfts = () => {
   const [session] = useQuery(getSession, null)
 
-  return <div>{session ? <MintButton /> : null}</div>
+  return (
+    <div>
+      {session
+        ? session.nftsOwned &&
+          session.nftsOwned.map((nft, i) => {
+            return (
+              <div key={i}>
+                <h1>{nft.name}</h1>
+                <h3>{nft.description}</h3>
+                <img src={nft.image} alt={nft.description} />
+              </div>
+            )
+          })
+        : null}
+    </div>
+  )
 }
 
-Home.getLayout = (page) => <Layout>{page}</Layout>
-export default Home
+Nfts.getLayout = (page) => <Layout>{page}</Layout>
+export default Nfts

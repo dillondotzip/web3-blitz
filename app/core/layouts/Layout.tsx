@@ -2,6 +2,7 @@ import { ReactNode } from "react"
 import { Head } from "blitz"
 
 import Navbar from "app/core/components/Navbar"
+import { ContractProvider } from "../providers/ContractProvider"
 
 import { Web3ReactProvider } from "@web3-react/core"
 import { Web3Provider } from "@ethersproject/providers"
@@ -24,8 +25,10 @@ const Layout = ({ title, children }: LayoutProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <Navbar />
-        {children}
+        <ContractProvider>
+          <Navbar />
+          {children}
+        </ContractProvider>
       </Web3ReactProvider>
     </>
   )

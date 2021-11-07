@@ -1,5 +1,6 @@
 import { getSession } from "blitz"
 import path from "path"
+import Layout from "app/core/layouts/Layout"
 
 export const getServerSideProps = async ({ req, res }) => {
   // Ensure these files are not eliminated by trace-based tree-shaking (like Vercel)
@@ -24,12 +25,23 @@ export const getServerSideProps = async ({ req, res }) => {
   }
 }
 
-const Private = () => {
+const Private = ({ session }) => {
   return (
     <div>
-      <p>You have access</p>
+      <h3>Owned Nfts</h3>
+      {session
+        ? session.nftsOwned.map((nft, i) => {
+            return (
+              <div key={i}>
+                <h1>{nft.name}</h1>
+                <h3>{nft.description}</h3>
+                <img src={nft.image} alt={nft.description} />
+              </div>
+            )
+          })
+        : null}
     </div>
   )
 }
-
+Private.getLayout = (page) => <Layout>{page}</Layout>
 export default Private

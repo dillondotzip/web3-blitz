@@ -1,59 +1,12 @@
-import { useEffect } from "react"
-import { useMutation, useQuery } from "blitz"
+import { useMutation } from "blitz"
 
 import { useWeb3React } from "@web3-react/core"
 import { injected, wcConnector } from "integrations/connectors"
-import getSession from "app/users/queries/getSession"
-import createSession from "app/users/mutations/createSession"
 import destroySession from "app/users/mutations/destroySession"
 
 const Navbar = () => {
   const web3React = useWeb3React()
-  const [session] = useQuery(getSession, null)
-  const [createSessionMutation] = useMutation(createSession)
   const [destroySessionMutation] = useMutation(destroySession)
-
-  useEffect(() => {
-    if (web3React.active) {
-      createSessionMutation({
-        address: web3React.account,
-        connector:
-          web3React.connector === injected
-            ? "injected"
-            : web3React.connector === wcConnector
-            ? "walletconnect"
-            : "",
-      })
-    }
-  }, [web3React, createSessionMutation])
-
-  // Activate metamask wallet if found in user's persisted private session
-  useEffect(() => {
-    if (
-      !web3React.active &&
-      session &&
-      session.walletAddress !== "" &&
-      session.connector === "injected"
-    ) {
-      injected.isAuthorized().then((authorized) => {
-        if (authorized) {
-          web3React.activate(injected)
-        }
-      })
-    } else if (
-      !web3React.active &&
-      session &&
-      session.walletAddress !== "" &&
-      session.connector === "walletconnect"
-    ) {
-      injected.isAuthorized().then((authorized) => {
-        if (authorized) {
-          web3React.activate(wcConnector)
-        }
-      })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   return (
     <div>
