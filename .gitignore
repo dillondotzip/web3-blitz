@@ -56,5 +56,4 @@ lib-cov
 .vscode-test
 
 # Hardhat
-app/artifacts/
 cache/
