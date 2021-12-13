@@ -64,7 +64,8 @@ const ContractProvider = ({ children }) => {
               : web3React.connector === wcConnector
               ? "walletconnect"
               : "",
-          balance: balance,
+          balance: parseInt(balance),
+          nftsOwned: ownedNFTs,
         })
         const signature = await signer.signMessage(user.nonce.toString())
         const response = await fetch(

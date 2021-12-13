@@ -2,7 +2,7 @@ import { resolver } from "blitz"
 import db from "db"
 import { Role } from "types"
 
-export default resolver.pipe(async ({ address, connector, balance }, ctx) => {
+export default resolver.pipe(async ({ address, connector, balance, nftsOwned }, ctx) => {
   const foundUser = await db.user.findFirst({
     where: {
       address,
@@ -14,7 +14,8 @@ export default resolver.pipe(async ({ address, connector, balance }, ctx) => {
       data: {
         address,
         nonce: Math.floor(Math.random() * 10000000),
-        balance: parseInt(balance),
+        balance,
+        nftsOwned,
       },
     })
 
