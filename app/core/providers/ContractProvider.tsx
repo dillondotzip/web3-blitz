@@ -1,27 +1,32 @@
-import { createContext, useContext, useState, useEffect, useMemo } from "react"
-import { useMutation, useQuery } from "blitz"
+import { createContext, useContext, useState, useEffect } from "react"
+import { useMutation, useSession } from "blitz"
 import { useWeb3React } from "@web3-react/core"
 import MakeNFT from "app/artifacts/contracts/MakeNFT.sol/MakeNFT.json"
 import { Contract } from "ethers"
-import getSession from "app/users/queries/getSession"
-import createSession from "app/users/mutations/createSession"
+import createUser from "app/users/mutations/createUser"
 import { injected, wcConnector } from "integrations/connectors"
 import toast from "react-hot-toast"
+import { WalletConnectConnector } from "@web3-react/walletconnect-connector"
 
 const defaultContext: {
   connectedContract: undefined | Contract
+  authenticated: boolean
 } = {
   connectedContract: undefined,
+  authenticated: false,
 }
 
 const ContractContext = createContext(defaultContext)
 const useContract = () => useContext(ContractContext)
 
-const ContractProvider = ({ children, session }) => {
+const ContractProvider = ({ children }) => {
   const [connectedContract, setContract] = useState(defaultContext.connectedContract)
+  const [authenticated, setAuthenticated] = useState(defaultContext.authenticated)
+
   const web3React = useWeb3React()
-  // const [session] = useQuery(getSession, null)
-  const [createSessionMutation] = useMutation(createSession)
+  const session = useSession({ suspense: false })
+
+  const [createUserMutation] = useMutation(createUser)
 
   // Watch for when wallet is connected and create private session in database
   useEffect(() => {
@@ -35,7 +40,7 @@ const ContractProvider = ({ children, session }) => {
       )
       setContract(connectedContract)
 
-      const createUserSession = async () => {
+      const signIn = async () => {
         let balance = await connectedContract.balanceOf(web3React.account)
         let i = 0
         let supply = await connectedContract.totalSupply()
@@ -51,7 +56,7 @@ const ContractProvider = ({ children, session }) => {
           })
         }
 
-        return createSessionMutation({
+        const user = await createUserMutation({
           address: web3React.account,
           connector:
             web3React.connector === injected
@@ -59,52 +64,57 @@ const ContractProvider = ({ children, session }) => {
               : web3React.connector === wcConnector
               ? "walletconnect"
               : "",
-          balance: parseInt(balance),
-          nftsOwned: ownedNFTs,
+          balance: balance,
         })
+        const signature = await signer.signMessage(user.nonce.toString())
+        const response = await fetch(
+          `/api/verify?address=${web3React.account}&signature=${signature}`
+        )
+        const data = await response.json()
+        setAuthenticated(data.authenticated)
       }
 
       try {
-        createUserSession()
+        if (!session.userId) {
+          signIn()
+        }
       } catch (err) {
         toast.error("Sorry, we had an unexpected error. Please try again. - " + err.toString())
         console.log(err)
       }
     }
-  }, [web3React, createSessionMutation])
+
+    // If user rejects wallet connect, catch error and set the provider to undefined
+    if (web3React.connector instanceof WalletConnectConnector && web3React.error) {
+      web3React.connector.walletConnectProvider = undefined
+    }
+  }, [web3React, createUserMutation, session])
 
   // Activate metamask wallet if found in user's persisted private session
   useEffect(() => {
-    if (
-      !web3React.active &&
-      session &&
-      session.walletAddress !== "" &&
-      session.connector === "injected"
-    ) {
+    if (!web3React.active && session && session.connector === "injected") {
       injected.isAuthorized().then((authorized) => {
         if (authorized) {
           web3React.activate(injected)
+          setAuthenticated(true)
         }
       })
-    } else if (
-      !web3React.active &&
-      session &&
-      session.walletAddress !== "" &&
-      session.connector === "walletconnect"
-    ) {
+    } else if (!web3React.active && session && session.connector === "walletconnect") {
       injected.isAuthorized().then((authorized) => {
         if (authorized) {
           web3React.activate(wcConnector)
+          setAuthenticated(true)
         }
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [session])
 
   return (
     <ContractContext.Provider
       value={{
         connectedContract,
+        authenticated,
       }}
     >
       {children}

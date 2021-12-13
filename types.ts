@@ -16,12 +16,7 @@ declare module "blitz" {
     PublicData: {
       userId: User["id"]
       role: Role
+      connector: string
     }
   }
-}
-
-export interface PrivateSession {
-  walletAddress: string
-  connector: Connectors
-  lastAction: Actions
 }

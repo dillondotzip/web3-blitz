@@ -13,12 +13,14 @@ generator client {
 // --------------------------------------
 
 model User {
-  id             Int      @id @default(autoincrement())
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  email          String   @unique
-  hashedPassword String?
-  role           String   @default("USER")
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      String   @default("USER")
+  address   String   @unique
+  nonce     Int
+  balance   Int?
+
 
   tokens   Token[]
   sessions Session[]

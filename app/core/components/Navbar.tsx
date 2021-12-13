@@ -1,5 +1,5 @@
 import { useMutation, Routes, useRouter, Link } from "blitz"
-
+import { useContract } from "app/core/providers/ContractProvider"
 import { useWeb3React } from "@web3-react/core"
 import { injected, wcConnector } from "integrations/connectors"
 import destroySession from "app/users/mutations/destroySession"
@@ -8,6 +8,7 @@ const Navbar = () => {
   const web3React = useWeb3React()
   const [destroySessionMutation] = useMutation(destroySession)
   const router = useRouter()
+  const contract = useContract()
 
   return (
     <div>
@@ -36,7 +37,7 @@ const Navbar = () => {
         </div>
       ) : null}
 
-      {web3React.active ? (
+      {web3React.active && contract.authenticated ? (
         <>
           <div>
             <div>Network</div>

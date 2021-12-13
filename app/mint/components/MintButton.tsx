@@ -28,7 +28,7 @@ const MintButton = () => {
     }
   }
 
-  return web3React.active ? (
+  return web3React.active && contract.authenticated ? (
     <>
       <div className="connected-container">
         <div className="connected-card">

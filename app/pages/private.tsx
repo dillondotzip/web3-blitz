@@ -1,12 +1,12 @@
-import { getSession } from "blitz"
 import Layout from "app/core/layouts/Layout"
+import { GetServerSidePropsContext } from "blitz"
+import getCurrentUserServer from "app/users/queries/getCurrentUserServer"
 
-export const getServerSideProps = async ({ req, res }) => {
-  const session = await getSession(req, res)
-  const privateData = await session.$getPrivateData()
+export const getServerSideProps = async (context: GetServerSidePropsContext) => {
+  const user = await getCurrentUserServer({ ...context })
 
-  if (privateData.nftsOwned && privateData.nftsOwned.length >= 1) {
-    return { props: { session: privateData } }
+  if (user && user.balance && user.balance >= 1) {
+    return { props: { user: user } }
   } else {
     return {
       redirect: {
@@ -17,11 +17,11 @@ export const getServerSideProps = async ({ req, res }) => {
   }
 }
 
-const Private = ({ session }) => {
+const Private = ({ user }) => {
   return (
-    <Layout session={session}>
+    <Layout>
       <h1>Owned Nfts</h1>
-      {session.nftsOwned.map((nft, i) => {
+      {user.nftsOwned.map((nft, i) => {
         return (
           <div key={i}>
             <h3>{nft.name}</h3>

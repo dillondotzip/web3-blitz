@@ -9,7 +9,6 @@ import { Web3Provider } from "@ethersproject/providers"
 
 type LayoutProps = {
   title?: string
-  session: Record<any, any>
   children: ReactNode
 }
 
@@ -18,7 +17,7 @@ const getLibrary = (provider) => {
   return library
 }
 
-const Layout = ({ title, children, session }: LayoutProps) => {
+const Layout = ({ title, children }: LayoutProps) => {
   return (
     <>
       <Head>
@@ -26,7 +25,7 @@ const Layout = ({ title, children, session }: LayoutProps) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Web3ReactProvider getLibrary={getLibrary}>
-        <ContractProvider session={session}>
+        <ContractProvider>
           <Navbar />
           {children}
         </ContractProvider>
